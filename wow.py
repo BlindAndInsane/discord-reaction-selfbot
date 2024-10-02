@@ -7,7 +7,10 @@ import asyncio
 import logging
 import coloredlogs
 
-bot = discord.Client()
+intents = discord.Intents.default()
+intents.messages = True
+
+bot = discord.Client(intents=intents)
 
 REACTION_URL = 'https://raw.githubusercontent.com/BlindAndInsane/discord-reaction-selfbot/refs/heads/main/reaction.json'
 
