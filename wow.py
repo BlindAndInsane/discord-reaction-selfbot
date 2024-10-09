@@ -65,7 +65,7 @@ async def on_ready():
     global REACTIONS
     logger.info(f'Logged in as {bot.user} (ID: {bot.user.id})')
 
-    REACTIONS = await load_reactions_from_url('TODO')
+    REACTIONS = await load_reactions_from_url('https://raw.githubusercontent.com/BlindAndInsane/discord-reaction-selfbot/refs/heads/main/reactions.json')
     if not REACTIONS:
         logger.warning("No reactions found in the JSON data!")
 
