@@ -44,24 +44,22 @@ async def load_reactions_from_url(url):
         logger.error(f"Failed to load reactions from URL: {e}")
         return []
 
+def is_channel_monitored(guild_id, channel_id, user_id):
+    if user_id in config.get("ignored_users", []):
+        logger.debug(f"User {user_id} is globally ignored.")
+        return False
 
-def is_channel_monitored(guild_id, channel_id):
-    # Check global channels
     if channel_id in config.get("channels", []):
         logger.debug(f"Channel {channel_id} is in the global channels list.")
         return True
 
-    # Check guild-specific rules
     for guild in config.get("guilds", []):
         if guild["guild_id"] == guild_id:
-            # Check if the channel is blacklisted in this guild
-            if channel_id in guild.get("blacklist", []):
+            if channel_id in guild.get("blacklisted_channel", []):
                 logger.debug(f"Channel {channel_id} is blacklisted in guild {guild_id}.")
                 return False
-            # Monitor all other channels in the guild
             return True
 
-    # If the guild is not in the config, don't monitor any channels by default
     logger.debug(f"Guild {guild_id} or channel {channel_id} is not configured to be monitored.")
     return False
 
@@ -70,7 +68,7 @@ async def on_ready():
     global REACTIONS
     logger.info(f'Logged in as {bot.user} (ID: {bot.user.id})')
 
-    REACTIONS = await load_reactions_from_url('https://raw.githubusercontent.com/BlindAndInsane/discord-reaction-selfbot/refs/heads/main/reactions.json')
+    REACTIONS = await load_reactions_from_url('https://raw.githubusercontent.com/BlindAndInsane/discord-reaction-selfbot/main/reactions.json')
     if not REACTIONS:
         logger.warning("No reactions found in the JSON data!")
 
@@ -82,8 +80,8 @@ def get_reaction_index(message_id):
 
 @bot.event
 async def on_message(message):
-    if not is_channel_monitored(message.guild.id, message.channel.id):
-        logger.debug(f"Skipping message from channel {message.channel.id} in guild {message.guild.id}.")
+    if not is_channel_monitored(message.guild.id, message.channel.id, message.author.id):
+        logger.debug(f"Skipping message from user {message.author.id} in channel {message.channel.id} in guild {message.guild.id}.")
         return
 
     logger.info(f"Processing message from {message.author} in {message.guild.name}")
