@@ -30,15 +30,20 @@ async def load_reactions_from_url(url):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 if response.status == 200:
-                    data = await response.json()
+                    content = await response.text()
+                    data = json.loads(content)
                     logger.info("Successfully loaded reactions from URL")
                     return data.get("reactions", [])
                 else:
                     logger.error(f"Failed to load reactions. HTTP status code: {response.status}")
                     return []
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse JSON from URL content: {e}")
+        return []
     except Exception as e:
         logger.error(f"Failed to load reactions from URL: {e}")
         return []
+
 
 def is_channel_monitored(guild_id, channel_id):
     # Check global channels
